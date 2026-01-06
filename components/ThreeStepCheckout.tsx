@@ -73,8 +73,7 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
 
   const steps: CheckoutStep[] = [
     { id: 1, title: 'Product', completed: true },
-    { id: 2, title: 'Details', completed: false },
-    { id: 3, title: 'Payment', completed: false }
+    { id: 2, title: 'Details', completed: false }
   ]
 
   const pricing = {
@@ -106,9 +105,9 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
     // Delivery fee calculation
     let deliveryFee = 0
     if (orderSubtotal >= 650) {
-      deliveryFee = 29 // Reduced delivery fee for orders R650+
+      deliveryFee = 60 // Reduced delivery fee for orders R650+
     } else {
-      deliveryFee = 59 // Standard delivery fee for orders under R650
+      deliveryFee = 60 // Standard delivery fee for orders under R650
     }
 
     return {
@@ -140,13 +139,11 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
   }
 
   const nextStep = () => {
-    if (currentStep < 3 && isStepValid(currentStep)) {
-      // Show payment method modal when moving from step 2 to 3
-      if (currentStep === 2) {
-        setShowPaymentModal(true)
-      } else {
-        setCurrentStep(prev => prev + 1)
-      }
+    if (currentStep < 2 && isStepValid(currentStep)) {
+      setCurrentStep(prev => prev + 1)
+    } else if (currentStep === 2 && isStepValid(currentStep)) {
+      // Complete checkout on step 2
+      completeCheckout()
     }
   }
 
@@ -182,7 +179,7 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
   }
 
   const prevStep = () => {
-    if (currentStep > 1) {
+    if (currentStep > 2) {
       setCurrentStep(prev => prev - 1)
     }
   }
@@ -248,7 +245,7 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
                 <h2 className="text-xl font-medium text-text mb-6">Customer Information</h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-4 mb-6">
                   <div>
                     <label className="block text-sm font-medium text-text mb-2">Name and Surname</label>
                     <input
@@ -331,6 +328,13 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Delivery Fee Notice */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                  <p className="text-sm text-blue-900">
+                    <span className="font-semibold">Delivery Fee:</span> R60 will be added to your order
+                  </p>
                 </div>
               </div>
             )}
@@ -444,26 +448,26 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
                 {/* Order Summary - Show for both EFT and PayFast */}
                 {(selectedPaymentMethod === 'eft' || (selectedPaymentMethod === 'payfast' && customerData.province)) && (
                   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-text">Item</span>
-                      <span className="text-text font-medium">Price</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-accent rounded-full"></span>
-                        <span className="text-text">
-                          {orderData.bundle ? `${orderData.quantity}-Bottle Bundle` : `Eubiosis ${orderData.size}`}
-                          {orderData.oto && ` + OTO ${orderData.oto}`}
-                          {irresistibleOfferAccepted && ' + Extra 50ml Bottle'}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-text">Item</span>
+                        <span className="text-text font-medium">Price</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 bg-accent rounded-full"></span>
+                          <span className="text-text">
+                            {orderData.bundle ? `${orderData.quantity}-Bottle Bundle` : `Eubiosis ${orderData.size}`}
+                            {orderData.oto && ` + OTO ${orderData.oto}`}
+                            {irresistibleOfferAccepted && ' + Extra 50ml Bottle'}
+                          </span>
+                        </div>
+                        <span className="text-text font-medium">
+                          R{totals.total}
                         </span>
                       </div>
-                      <span className="text-text font-medium">
-                        R{totals.total}
-                      </span>
                     </div>
                   </div>
-                </div>
                 )}
 
                 {/* Irresistible Offer - Only show if user didn't take big offer and province is selected */}
@@ -487,8 +491,6 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
                     </div>
                   </div>
                 )}
-
-
               </div>
             )}
           </div>
@@ -496,8 +498,7 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 sticky top-8">
-              {/* Show order summary on step 2 or step 3 */}
-              {(currentStep === 2 || (currentStep === 3 && (selectedPaymentMethod === 'eft' || customerData.province))) ? (
+              {currentStep === 2 && (
                 <>
                   <h3 className="text-lg font-medium text-text mb-4">Order Summary</h3>
                   
@@ -526,22 +527,13 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
                         {irresistibleOfferAccepted && (
                           <div className="text-sm text-green-600">+ Extra Bottle: R{totals.irresistibleOfferPrice}</div>
                         )}
-                        {currentStep === 3 && (
-                          <div className="text-sm text-gray-600">Delivery: R{totals.deliveryFee}</div>
-                        )}
-                        <div className="font-medium text-accent text-lg">Total: R{currentStep === 3 ? totals.total : totals.discountedPrice + (irresistibleOfferAccepted ? totals.irresistibleOfferPrice : 0)}</div>
+                        <div className="text-sm text-gray-600">Delivery: R{totals.deliveryFee}</div>
+                        <div className="font-medium text-accent text-lg">Total: R{totals.total}</div>
                         <div className="text-xs text-green-600 font-medium">You Save: R{totals.totalSavings} ✓</div>
                       </div>
                     </div>
                   </div>
                 </>
-              ) : (
-                <div className="text-center py-8">
-                  <h3 className="text-lg font-medium text-text mb-4">Select Your Province</h3>
-                  <p className="text-sm text-gray-600">
-                    Please select your province above to see your order summary and continue with payment.
-                  </p>
-                </div>
               )}
 
               {/* Navigation Buttons */}

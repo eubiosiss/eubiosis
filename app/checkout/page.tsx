@@ -46,7 +46,7 @@ function CheckoutContent() {
       }
       
       const orderSubtotal = subtotal + irresistibleOfferPrice
-      const deliveryFee = orderSubtotal >= 650 ? 29 : 59
+      const deliveryFee = 60
       const total = orderSubtotal + deliveryFee
       
       // Send notification emails before redirecting to PayFast
@@ -124,11 +124,7 @@ function CheckoutContent() {
         form.appendChild(input)
       })
       
-      // Add 2 second delay before redirecting to PayFast
-      console.log('⏳ Waiting 2 seconds before redirecting to PayFast...')
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Submit form
+      // Submit form immediately
       document.body.appendChild(form)
       form.submit()
     } catch (error) {
