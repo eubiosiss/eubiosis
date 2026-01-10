@@ -86,7 +86,7 @@ export async function saveOrder(orderData: any, customerData: any) {
     }
     
     const orderSubtotal = baseSubtotal + irresistibleOfferPrice
-    const deliveryFee = orderSubtotal >= 650 ? 29 : 59
+    const deliveryFee = 60
     const totalAmount = orderSubtotal + deliveryFee
     
     console.log('Calculated totals:', { orderSubtotal, deliveryFee, totalAmount, totalSavings })

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY || ''
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
-const SENDER_EMAIL = 'info@wabi-sabi.click'
+const SENDER_EMAIL = 'info@eubiosis.pro'
 const ADMIN_EMAIL = 'nadine.marshall45@gmail.com'
 
 interface EmailPayload {
@@ -453,7 +453,7 @@ function getCustomerPendingEmailHTML(data: {
         </div>
 
         <p style="color: #999; font-size: 13px; margin: 20px 0 0 0; text-align: center;">
-          Questions? We're here to help! Contact us at <a href="mailto:info@wabi-sabi.click" style="color: #2d5016; text-decoration: none;">info@wabi-sabi.click</a>
+          Questions? We're here to help! Contact us at <a href="mailto:info@eubiosis.pro" style="color: #2d5016; text-decoration: none;">info@eubiosis.pro</a>
         </p>
       </div>
 
@@ -537,7 +537,7 @@ function getCustomerPurchasedEmailHTML(data: {
         </div>
 
         <p style="color: #999; font-size: 13px; margin: 20px 0 0 0; text-align: center;">
-          Need help? Contact us at <a href="mailto:info@wabi-sabi.click" style="color: #1b5e20; text-decoration: none;">info@wabi-sabi.click</a>
+          Need help? Contact us at <a href="mailto:info@eubiosis.pro" style="color: #1b5e20; text-decoration: none;">info@eubiosis.pro</a>
         </p>
       </div>
 

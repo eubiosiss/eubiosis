@@ -71,10 +71,7 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
     console.log('🔍 Province state updated:', customerData.province)
   }, [customerData.province])
 
-  const steps: CheckoutStep[] = [
-    { id: 1, title: 'Product', completed: true },
-    { id: 2, title: 'Details', completed: false }
-  ]
+  const steps: CheckoutStep[] = []
 
   const pricing = {
     '50ml': { basePrice: 325, discountedPrice: 265, savings: 60 },
@@ -139,11 +136,9 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
   }
 
   const nextStep = () => {
-    if (currentStep < 2 && isStepValid(currentStep)) {
-      setCurrentStep(prev => prev + 1)
-    } else if (currentStep === 2 && isStepValid(currentStep)) {
-      // Complete checkout on step 2
-      completeCheckout()
+    if (currentStep === 2 && isStepValid(currentStep)) {
+      // Show payment method modal when moving from step 2
+      setShowPaymentModal(true)
     }
   }
 
@@ -155,7 +150,7 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
       // Go straight to PayFast payment
       setTimeout(() => completeCheckout(), 0)
     } else {
-      // Go to step 3 to show bank details
+      // Show EFT details
       setCurrentStep(3)
     }
   }
@@ -202,44 +197,11 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
-                  ${currentStep === step.id 
-                    ? 'bg-accent text-white' 
-                    : step.completed || currentStep > step.id
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  }
-                `}>
-                  {step.completed || currentStep > step.id ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    step.id
-                  )}
-                </div>
-                <span className={`ml-2 text-sm font-medium ${
-                  currentStep === step.id ? 'text-accent' : 'text-gray-600'
-                }`}>
-                  {step.title}
-                </span>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
-                    currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
-                  }`} />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="w-full px-4 py-8">
+        {/* No progress steps - removed */}
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Main Content - Left Side */}
           <div className="lg:col-span-2">
             {currentStep === 2 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
@@ -331,10 +293,14 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
                 </div>
 
                 {/* Delivery Fee Notice */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                  <p className="text-sm text-blue-900">
-                    <span className="font-semibold">Delivery Fee:</span> R60 will be added to your order
-                  </p>
+                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mt-8">
+                  <h3 className="font-bold text-green-900 mb-3 text-lg">Nationwide Delivery - R60 Flat Rate</h3>
+                  <div className="space-y-2 text-sm text-green-800">
+                    <p>✓ We deliver nationwide to all provinces in South Africa</p>
+                    <p>✓ Fixed delivery fee of <span className="font-bold">R60</span> no matter where you are</p>
+                    <p>✓ Plus you save <span className="font-bold">R60</span> on the product itself with our special pricing</p>
+                    <p className="font-semibold mt-3">Total savings: R120 on this order!</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -502,34 +468,49 @@ export default function ThreeStepCheckout({ initialOrder, initialProvince = '', 
                 <>
                   <h3 className="text-lg font-medium text-text mb-4">Order Summary</h3>
                   
-                  <div className="flex gap-3 mb-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                  <div className="flex flex-col gap-3 mb-4">
+                    <div className="w-full bg-gray-100 rounded-lg overflow-hidden">
                       <Image
                         src="/images/Website Product Image.png"
                         alt="Eubiosis"
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-contain"
+                        width={200}
+                        height={200}
+                        className="w-full h-auto object-contain"
                       />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-text">
+                    <div>
+                      <h4 className="font-medium text-text mb-2">
                         {orderData.bundle ? `${orderData.quantity}-Bottle Bundle` : 'Eubiosis — Nature in a Bottle'}
                         {orderData.oto && <span className="text-accent"> + OTO Deal</span>}
                       </h4>
-                      <p className="text-sm text-text/70">
+                      <p className="text-sm text-text/70 mb-3">
                         {orderData.size} × {orderData.quantity}
                         {orderData.oto && <span className="text-accent"> + {orderData.oto}</span>}
                       </p>
-                      <div className="text-right mt-1 space-y-1">
-                        <div className="text-sm text-red-500 line-through">R{totals.basePrice}</div>
-                        <div className="text-sm text-gray-600">Special Price: R{totals.discountedPrice}</div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Original:</span>
+                          <span className="text-red-500 line-through">R{totals.basePrice}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Special Price:</span>
+                          <span className="font-medium">R{totals.discountedPrice}</span>
+                        </div>
                         {irresistibleOfferAccepted && (
-                          <div className="text-sm text-green-600">+ Extra Bottle: R{totals.irresistibleOfferPrice}</div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Extra Bottle:</span>
+                            <span className="text-green-600">R{totals.irresistibleOfferPrice}</span>
+                          </div>
                         )}
-                        <div className="text-sm text-gray-600">Delivery: R{totals.deliveryFee}</div>
-                        <div className="font-medium text-accent text-lg">Total: R{totals.total}</div>
-                        <div className="text-xs text-green-600 font-medium">You Save: R{totals.totalSavings} ✓</div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Delivery:</span>
+                          <span className="font-medium">R{totals.deliveryFee}</span>
+                        </div>
+                        <div className="border-t pt-2 flex justify-between">
+                          <span className="font-medium">Total:</span>
+                          <span className="text-2xl font-bold text-accent">R{totals.total}</span>
+                        </div>
+                        <p className="text-xs text-green-600 font-medium pt-2">You Save: R{totals.totalSavings} ✓</p>
                       </div>
                     </div>
                   </div>
